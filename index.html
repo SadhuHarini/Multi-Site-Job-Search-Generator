@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi-Site Job Search Generator</title>
+
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Configure Tailwind for Inter font and custom colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#4f46e5',
+                        'primary-dark': '#4338ca',
+                        surface: '#f9fafb',
+                        'card-bg': 'white',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Custom Styles -->
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        html, body {
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-surface font-sans p-4 sm:p-8 flex justify-center items-start min-h-screen">
+
+    <div class="w-full max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Job Search</h1>
+            <p class="text-xl text-gray-600">Generate search links for top job boards instantly.</p>
+        </header>
+
+        <!-- Input Card -->
+        <div class="bg-card-bg p-6 sm:p-8 rounded-xl shadow-2xl mb-10 border border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Enter Search Criteria</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Job Title Input -->
+                <div>
+                    <label for="jobTitle" class="block text-sm font-medium text-gray-700 mb-2">Job Title (e.g., Data Scientist)</label>
+                    <input type="text" id="jobTitle" placeholder="e.g., Software Engineer" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm"
+                        value="Python Developer" />
+                </div>
+
+                <!-- Location Input -->
+                <div>
+                    <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Location (e.g., Bengaluru)</label>
+                    <input type="text" id="location" placeholder="e.g., India (default)"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm"
+                        value="India" />
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <div class="mt-8">
+                <button onclick="generateSearchLinks()"
+                    class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-primary/50">
+                    Generate Search Links
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <section id="results" class="space-y-4" style="display: none;">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Generated Search Links</h2>
+            <!-- Results will be inserted here -->
+        </section>
+
+        <!-- JavaScript Logic -->
+        <script>
+            // Helper to format query strings
+            const formatQuery = (text, separator) => {
+                if (!text) return "";
+                return text.trim().split(/\s+/).join(separator);
+            };
+
+            function generateSearchLinks() {
+                const jobTitle = document.getElementById('jobTitle').value.trim();
+                let location = document.getElementById('location').value.trim() || "India"; // Default location
+
+                if (!jobTitle) {
+                    alert('Please enter a Job Title.');
+                    return;
+                }
+
+                const jobTitlePlus = formatQuery(jobTitle, '+');
+                const locationPlus = formatQuery(location, '+');
+                const jobTitleDash = formatQuery(jobTitle, '-');
+                const locationDash = formatQuery(location, '-');
+
+                // ✅ Corrected URLs using backticks
+                const indeedUrl = `https://www.indeed.com/jobs?q=${jobTitlePlus}&l=${locationPlus}`;
+                const linkedinUrl = `https://www.linkedin.com/jobs/search/?keywords=${jobTitleDash}&location=${locationDash}`;
+                const glassdoorUrl = `https://www.glassdoor.com/Job/${locationDash}-${jobTitleDash}-jobs-SRCH_IL.0,6_IC2671300_KO7,15.htm`;
+                const monsterUrl = `https://www.monster.com/jobs/search/?q=${jobTitleDash}&where=${locationDash}`;
+                const naukriUrl = `https://www.naukri.com/${jobTitlePlus}-jobs-in-${locationPlus}`;
+
+                const searchUrls = [
+                    { name: "Indeed", url: indeedUrl, icon: "🌍" },
+                    { name: "LinkedIn", url: linkedinUrl, icon: "🇮🇳" },
+                    { name: "Glassdoor", url: glassdoorUrl, icon: "🏢" },
+                    { name: "Monster", url: monsterUrl, icon: "👾" },
+                    { name: "Naukri", url: naukriUrl, icon: "👔" }
+                ];
+
+                const resultsContainer = document.getElementById('results');
+                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'block';
+
+                searchUrls.forEach(site => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-card-bg p-5 rounded-xl shadow-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center transition duration-200 ease-in-out hover:shadow-xl hover:ring-2 hover:ring-primary/20';
+
+                    card.innerHTML = `
+                        <div class="mb-3 sm:mb-0">
+                            <p class="text-xl font-semibold text-gray-800 flex items-center">
+                                <span class="text-2xl mr-3">${site.icon}</span>
+                                ${site.name}
+                            </p>
+                            <p class="text-sm text-gray-500 truncate w-full sm:w-80">${site.url}</p>
+                        </div>
+                        <a href="${site.url}" target="_blank" rel="noopener noreferrer"
+                            class="w-full sm:w-auto text-center bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-lg transition duration-200 ease-in-out shadow-md">
+                            Open Search
+                        </a>
+                    `;
+                    resultsContainer.appendChild(card);
+                });
+            }
+
+            // Auto-generate on page load using default values
+            window.onload = generateSearchLinks;
+        </script>
+    </div>
+</body>
+</html>
